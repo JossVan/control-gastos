@@ -17,8 +17,8 @@ export default function ExpenseForm() {
   const [expense, setExpense] = useState<DraftExpense>(draftExpense);
 
   const [error, setError] = useState("");
-
-  const { dispatch, state } = useBudget();
+  const [previusAmount, setPreviusAmount] = useState(0);
+  const { dispatch, state, totalAvailable } = useBudget();
 
   useEffect(() => {
     if (state.editingId) {
@@ -26,6 +26,7 @@ export default function ExpenseForm() {
         (expense) => expense.id === state.editingId
       )[0];
       setExpense(editingExpense);
+      setPreviusAmount(editingExpense.amount);
     }
   }, [state.editingId]);
   const handleChangeDate = (value: Value) => {
@@ -53,17 +54,31 @@ export default function ExpenseForm() {
       return;
     }
 
-    dispatch({
-      type: "add-expense",
-      payload: { expense },
-    });
+    if (expense.amount - previusAmount > totalAvailable) {
+      setError("El gasto excede el presupuesto");
+      return;
+    }
+
+    if (state.editingId) {
+      dispatch({
+        type: "update-expense",
+        payload: {
+          expense: { id: state.editingId, ...expense },
+        },
+      });
+    } else {
+      dispatch({
+        type: "add-expense",
+        payload: { expense },
+      });
+    }
 
     setExpense(draftExpense);
   };
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <legend className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2">
-        Nuevo Gasto
+        {state.editingId ? "Edicion de gasto" : "Nuevo gasto"}
       </legend>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       <div className="flex flex-col gap-2">
@@ -125,7 +140,7 @@ export default function ExpenseForm() {
 
       <input
         type="submit"
-        value="Agregar Gasto"
+        value={state.editingId ? "Guardar cambios" : "Registrar gasto"}
         className="bg-blue-600 w-full p-2 text-white uppercase font-bold rounded-lg"
       />
     </form>
