@@ -3,7 +3,7 @@ import { useBudget } from "../hooks/useBudget";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 export default function BudgetTracker() {
-  const { state, totalExpenses, totalAvailable } = useBudget();
+  const { state, totalExpenses, totalAvailable, dispatch } = useBudget();
   const percentage = +((totalExpenses / state.budget) * 100).toFixed(2);
   const color = percentage === 100 ? "#dc2626" : "#3b82f6";
   return (
@@ -24,6 +24,7 @@ export default function BudgetTracker() {
         <button
           type="button"
           className="bg-pink-600 w-full p-2 text-white uppercase font-bold rounded-lg"
+          onClick={() => dispatch({ type: "reset" })}
         >
           Borrar datos de App
         </button>
